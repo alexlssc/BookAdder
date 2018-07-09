@@ -84,6 +84,7 @@ Class BookAdder
       normaldesc LONGTEXT NOT NULL,
 		  picurl varchar(255) NOT NULL,
       shopurl varchar(255) NOT NULL,
+      on_main_page TINYINT(1) NOT NULL,
 		  PRIMARY KEY  (id)
 	  ) $charset_collate;";
 

@@ -22,6 +22,7 @@
             switch($column_name){
                 case 'title':
                 case 'shopurl':
+                case 'on_main_page':
                     return $item[$column_name];
                 default:
                     return print_r($item,true); //Show the whole array for troubleshooting purposes
@@ -56,7 +57,8 @@
             $columns = array(
                 'cb'        => '<input type="checkbox" />', //Render a checkbox instead of text
                 'title'     => 'Title',
-                'shopurl'    => 'Shop URL'
+                'shopurl'    => 'Shop URL',
+                'on_main_page' => 'On main page'
             );
             return $columns;
         }
@@ -64,7 +66,8 @@
         function get_sortable_columns() {
             $sortable_columns = array(
                 'title'     => array('title',false),     //true means it's already sorted
-                'shopurl'    => array('shopurl',false)
+                'shopurl'    => array('shopurl',false),
+                'on_main_page'    => array('on_main_page',false)
             );
             return $sortable_columns;
         }
@@ -165,6 +168,7 @@
              **********************************************************************/
 
              $data = $wpdb->get_results('SELECT * FROM ' . $table_name , ARRAY_A);
+             $wpdb->flush();
 
 
             /**
@@ -228,9 +232,12 @@
           $table_name = $wpdb->prefix . 'books';
           $id = $_REQUEST['book'];
           $wpdb->delete( $table_name, array( 'id' => $id ) );
+          $wpdb->flush();
         }
 
   }
+
+  $debugString = "";
 
   //Create an instance of our package class...
   $testListTable = new List_Table_Books();
@@ -239,17 +246,28 @@
   //Fetch, prepare, sort, and filter our data...
   $testListTable->prepare_items();
 
+
+  if( isset($_POST['submitButtonList']) ){ //if buttom dropdown menu pressed
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'books'; //Retrieve table full name
+    $idTarget = $_POST['selectList']; //Retrive value linked to select list
+    $wpdb->query($wpdb->prepare("UPDATE $table_name SET on_main_page=%d WHERE on_main_page=%d", 0, 1)); //Remove actual main page book from main page
+    $wpdb->flush();
+    $wpdb->query($wpdb->prepare("UPDATE $table_name SET on_main_page=%d WHERE id=%d", 1, $idTarget));//Add new book to main page
+    $wpdb->flush();
+  }
+
  ?>
 
 
 
 
  <div class="wrap">
-
+     <div class="titleContainer">
+       <h1>Book Adder Plugin</h1>
+     </div>
      <div id="icon-users" class="icon32"><br/></div>
      <h2>Books List</h2>
-
-
      <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
      <form id="movies-filter" method="get">
          <!-- For plugins, we also need to ensure that the form posts back to our current page -->
@@ -257,5 +275,21 @@
          <!-- Now we can render the completed list table -->
          <?php $testListTable->display() ?>
      </form>
+
+    <div id="icon-users" class="icon32"><br/></div>
+    <h2>Select book displayed on main page</h2>
+    <form id="formAddBook" action="" method="POST">
+      <select name='selectList'>
+        <?php
+          foreach ($testListTable->items as $object){
+            echo "<option value = $object[id] name='selectValue'>$object[title]</option>";
+          }
+        ?>
+      </select>
+      <input type="submit" value="SUBMIT" name="submitButtonList"/>
+    </form>
+    <?php echo $debugString; ?>
+
+
 
  </div>

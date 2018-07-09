@@ -54,6 +54,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <div id="icon-users" class="icon32"><br/></div>
     <title>Edit Book</title>
      <script type="text/javascript" src="<?php echo plugins_url( '../assets/imageUploader.js', __FILE__ ) ?>"></script>
   </head>
@@ -75,7 +76,7 @@
       <?php wp_editor( $currentShortDesc, "shortdesc")?>
       <p><strong>Normal description:</strong></p>
       <?php wp_editor( $currentNormalDesc, "normaldesc")?>
-      <input type="submit" value="Submit" name="submitButton"/>
+      <input type="submit" value="SUBMIT" name="submitButton"/>
     </form>
     <h2 class="successMessage">
       <?php echo $successMessage ?>

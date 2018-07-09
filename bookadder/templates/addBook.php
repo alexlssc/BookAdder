@@ -4,6 +4,18 @@
 
   $table_name = $wpdb->prefix . 'books';
 
+  //Verify if database empty
+  $rowcount = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+
+  //Display correct tag depending of size of table
+  function possibleGreyedCheck($rowcount){
+    if($rowcount == 0){
+      return '<input type="checkbox" name="onMainPage" value="valueCheckAddPage" checked onclick="return false">Display on main page<br>';
+    } else {
+      return '<input type="checkbox" name="onMainPage" value="valueCheckAddPage">Display on main page<br>';
+    }
+  }
+
   $successMessage = "";
 
   if (isset ( $_POST['submitButton'] ) ){
@@ -13,6 +25,12 @@
     $shop = $_POST['Shop'];
     $smallDesc = $_POST['shortdesc'];
     $normalDesc = $_POST['normaldesc'];
+    $onMainPage = isset($_POST['onMainPage']) ? 1 : 0;
+
+    if($onMainPage == 1){
+      $wpdb->query($wpdb->prepare("UPDATE $table_name SET on_main_page=%d WHERE on_main_page=%d", 0, 1)); //Remove actual main page book from main page
+      $wpdb->flush();
+    }
 
     //check if evey field not NULL
     if( !empty($title) && !empty($picture) && !empty($shop) && !empty($smallDesc) && !empty($normalDesc) ){
@@ -22,7 +40,8 @@
         "shortdesc" => $smallDesc,
         "normaldesc" => $normalDesc,
         "picurl" => $picture,
-        "shopurl" => $shop
+        "shopurl" => $shop,
+        "on_main_page" => $onMainPage
       ));
 
       $successMessage = "Done!";
@@ -43,6 +62,7 @@
     <div class="titleContainer">
       <h1>Book Adder Plugin</h1>
     </div>
+    <div id="icon-users" class="icon32"><br/></div>
     <h2>Add Book</h2>
     <form id="formAddBook" action="" method="POST">
       <strong>Book's title:</strong> <input type="text" name="Title" value= "<?php echo $currentTitle ?>" ><br>
@@ -56,8 +76,11 @@
       <p><strong>Short description:</strong></p>
       <?php wp_editor( $currentShortDesc, "shortdesc")?>
       <p><strong>Normal description:</strong></p>
-      <?php wp_editor( $currentNormalDesc, "normaldesc")?>
-      <input type="submit" value="Submit" name="submitButton"/>
+      <?php wp_editor( $currentNormalDesc, "normaldesc")?><br>
+      <?php
+        echo possibleGreyedCheck($rowcount);
+      ?>
+      <br><input type="submit" value="SUBMIT" name="submitButton"/>
     </form>
     <h2 class="successMessage">
       <?php echo $successMessage ?>
